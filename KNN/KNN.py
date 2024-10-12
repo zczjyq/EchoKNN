@@ -118,7 +118,7 @@ def plot_sonar_slice(ans, k):
 # 两条墙的四次多项式方程
 def right_wall(x):
     # 右侧墙的四次方程
-    return 5.903e-07 * x ** 4 - 0.0009785 * x ** 3 + 0.6121 * x ** 2 - 172 * x + 1.861e+04
+     return 2.408e-07 *x**4 - 0.0004357 *x**3 + 0.2981 *x**2 - 91.88 *x + 1.099e+04
 
 
 def left_wall(x):
