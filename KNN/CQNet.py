@@ -201,7 +201,10 @@ def train_supervised_model(model, data, train_num, labels, batch_size=16, learni
     criterion = nn.BCELoss()  # 二元交叉熵损失
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+    # 构建数据加载器
     data_loader = torch.utils.data.DataLoader(list(zip(data, labels)), batch_size=batch_size, shuffle=True)
+
+    # 开始训练
     t = time.time()
     for epoch in range(num_epochs):
         for batch_data, batch_labels in data_loader:
