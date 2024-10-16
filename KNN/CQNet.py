@@ -179,17 +179,27 @@ def plot_data_with_labels(data, labels, show_labels=True):
 
 def enhance_contrast(data, alpha=2):
     """
-    增强数据的对比度，使得数值小的更加小，数值大的更加大。
+    使用 Gamma 校正增强数据对比度，使得高亮和暗点差距更为明显。
     
     参数:
-    - data: 输入数据，要求已经归一化在[0, 1]之间。
-    - alpha: 控制增强程度的参数，alpha > 1 时，增强效果更强。
+    - data: 输入数据，要求已经归一化在 [0, 1] 之间。
+    - gamma: Gamma 值，控制对比度增强程度，gamma > 1 时，亮度和对比度更显著。
     
     返回值:
-    - enhanced_data: 对比度增强后的数据，范围仍然在[0, 1]之间。
+    - enhanced_data: 经过 Gamma 校正后的数据，范围仍然在 [0, 1] 之间。
     """
-    # 使用幂函数进行数据的非线性变换，alpha 控制变换的强度
-    enhanced_data = np.power(data, alpha)
+    # # 使用 Gamma 校正进行非线性变换
+    # enhanced_data = np.power(data, alpha)
+    
+    # 创建增强后的数据副本
+    enhanced_data = np.copy(data)
+    
+    # 对于 data 较小的部分，让其更小（alpha<1时效果是反的）
+    small = data < 0.25  # 还可选0.23, 0.27等
+    enhanced_data[small] = np.power(data[small], alpha)
+    
+    big = data >= 0.25
+    enhanced_data[big] = np.power(data[big], 1/alpha)
     
     return enhanced_data
 
@@ -250,10 +260,10 @@ def train_supervised_model(model, data, train_num, labels, batch_size=16, learni
 
 
 # 准备数据和标签
-def prepare_data_and_labels(ans, train_num, alpha_start=0.5, alpha_end=1.5, alpha_step=0.2, show_labels = True, weather_plot = True, show_all = True):
+def prepare_data_and_labels(ans, train_num, alpha_start=0.5, alpha_end=2.5, alpha_step=0.2, show_labels = True, weather_plot = True, show_all = True):
     data = np.moveaxis(ans, -1, 0)
     data = np.expand_dims(data, axis=1)
-    data = (data - np.min(data)) / (np.max(data) - np.min(data))
+    data = normalize_data(data)
     alpha = np.arange(alpha_start, alpha_end, alpha_step)
     res =enhance_contrast(data, alpha=0.4)
     
