@@ -194,11 +194,12 @@ def enhance_contrast(data, alpha=2):
     return enhanced_data
 
 
-# 训练卷积神经网络，使用二元交叉熵损失
 def train_supervised_model(model, data, train_num, labels, batch_size=16, learning_rate=0.001):
-    num_epochs= train_num
+    num_epochs = train_num
     print("Training supervised model...")
-    criterion = nn.BCELoss()  # 二元交叉熵损失
+    
+    # 使用二元交叉熵损失
+    criterion = nn.BCELoss()  
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # 构建数据加载器
@@ -207,20 +208,44 @@ def train_supervised_model(model, data, train_num, labels, batch_size=16, learni
     # 开始训练
     t = time.time()
     for epoch in range(num_epochs):
-        for batch_data, batch_labels in data_loader:
+        epoch_loss = 0  # 记录每个 epoch 的总损失
+        for batch_idx, (batch_data, batch_labels) in enumerate(data_loader):
+            # 获取模型的输出
             output = model(batch_data)
+            
+            # 计算损失
             loss = criterion(output, batch_labels)
-
+            
+            # 清空之前的梯度
             optimizer.zero_grad()
+            
+            # 反向传播
             loss.backward()
+            
+            # 更新模型参数
             optimizer.step()
-        # 清空缓存显存
+
+            # 打印当前批次的损失和输出值
+            print(f"Batch {batch_idx + 1}/{len(data_loader)}, Loss: {loss.item():.4f}")
+  
+            # 累加当前批次的损失
+            epoch_loss += loss.item()
+
+        # 每个 epoch 结束后清空缓存显存
         torch.cuda.empty_cache()
         
         t1 = time.time()
-        if ((epoch + 1) % 10 == 0) or t1 - t > 5:
-            print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}, Time: {t1 - t}')
-            t = t1
+        
+        # 打印每个 epoch 的信息
+        print(f"Epoch [{epoch + 1}/{num_epochs}] finished, Total Loss: {epoch_loss:.4f}, Time: {t1 - t:.2f} seconds")
+        
+        # 打印模型的参数梯度（可选）
+        for name, param in model.named_parameters():
+            if param.requires_grad and param.grad is not None:
+                print(f"Layer: {name}, Grad Norm: {param.grad.norm().item():.4f}")
+
+        # 更新计时器
+        t = t1
 
 
 
