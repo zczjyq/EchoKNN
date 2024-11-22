@@ -100,8 +100,8 @@ def reshape_img_matrix(img_8bit_matrix, train_num):
     for k in range(img_8bit_matrix.shape[1]):
         reshaped_arrays[:, :, k] = img_8bit_matrix[:, k].reshape((600, 512))
         
-        # 翻转
-        reshaped_arrays[:, :, k] = np.flip(reshaped_arrays[:, :, k], axis=0)
+        # # 翻转
+        # reshaped_arrays[:, :, k] = np.flip(reshaped_arrays[:, :, k], axis=0)
 
     return reshaped_arrays
 
@@ -182,6 +182,7 @@ def interactive_plot(ans_tensor, predictions):
     )
     widgets.interact(update_plot, slice_idx=slice_slider)
 # 绘制叠加的原始数据和标签
+
 def plot_data_with_labels(data, labels, show_labels=True):
     plt.figure(figsize=(8, 6))
 
