@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import struct
 import matplotlib.pyplot as plt
 import torch
@@ -50,7 +51,7 @@ def read_sonar_data(file_path, train_num):
                     break
                 c1, c2, c3 = c2, c3, c4
 
-                if file.read(0) == "b":
+                if file.tell() >= os.path.getsize(file_path): # 判断是否到达文件末尾
                     return img_8bit_matrix
 
             if kk == 65535:
@@ -117,8 +118,8 @@ def reshape_img_matrix_single(img_8bit_matrix, photo_show):
     # 将指定图片重塑为 (600, 512) 的二维数组
     reshaped_array = img_8bit_matrix[:, photo_show-1].reshape((600, 512))
 
-    # 翻转操作 (垂直翻转)
-    reshaped_array = np.flip(reshaped_array, axis=0)
+    # # 翻转操作 (垂直翻转)
+    # reshaped_array = np.flip(reshaped_array, axis=0)
 
     return reshaped_array
 
@@ -281,7 +282,7 @@ def train_supervised_model(model, data, train_num, labels, batch_size=16, learni
 
 
 # 准备数据和标签
-def prepare_data_and_labels(ans, train_num, alpha_start=0.5, alpha_end=2.5, alpha_step=0.2, show_labels = True, weather_plot = True, show_all = True):
+def prepare_data_and_labels(ans, train_num, alpha_start=0.5, alpha_end=2.5, alpha_step=0.2, show_labels = False, weather_plot = False):
     data = np.moveaxis(ans, -1, 0)
     data = np.expand_dims(data, axis=1)
     data = normalize_data(data)
@@ -301,9 +302,8 @@ def prepare_data_and_labels(ans, train_num, alpha_start=0.5, alpha_end=2.5, alph
     labels_tensor = generate_labels(data_tensor.shape[2:])
     if weather_plot:
     # 绘制叠加的原始数据和标签
-        if show_all:
-            for i in range(0, data_tensor.shape[0], train_num):
-                plot_data_with_labels(data_tensor[i, 0].numpy(), labels_tensor.numpy(), show_labels)
+        for i in range(0, data_tensor.shape[0], train_num):
+            plot_data_with_labels(data_tensor[i, 0].numpy(), labels_tensor.numpy(), show_labels)
 
     # 将二维标签扩展为与数据相同的三维尺寸
     labels_tensor = labels_tensor.unsqueeze(0).expand(data_tensor.shape[0], -1, -1)
