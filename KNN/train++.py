@@ -102,18 +102,16 @@ ans_tensor, labels_tensor = train_functions.prepare_data_and_labels(
     ans, train_num, alpha_start=1, alpha_end = 1.1, show_labels=False, weather_plot=False
 ) # 运行到这里，会输出torch.Size([500, 1, 600, 512])
 
-
-# ---------------初始化卷积网络---------------
+# ---------------预加载练过的模型---------------
+# 初始化卷积网络
 conv_net = DeepConvNet()
 # 检查 GPU 是否可用
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# 加载预训练模型的权重（路径替换为你的模型路径）
+conv_net.load_state_dict(torch.load("KNN/model/SuperDeep2024-11-30_10-36-00.pth", map_location=device))
 # 将模型移动到 GPU
 conv_net.to(device)
-# 将数据和标签移动到 GPU
-ans_tensor = ans_tensor.to(device)
-labels_tensor = labels_tensor.to(device)
 
-# 训练和测试建议一次只用一个，把另一个注释掉
 # ---------------开始训练卷积神经网络---------------
 # for i in range(20):
 train_functions.train_supervised_model(conv_net, ans_tensor, train_num = 6, labels= labels_tensor, batch_size=8, learning_rate=0.005)
@@ -122,23 +120,3 @@ train_functions.train_supervised_model(conv_net, ans_tensor, train_num = 6, labe
 localtime = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
 torch.save(conv_net.state_dict(), f"KNN/model/SuperDeep{localtime}.pth")
 # torch.save(conv_net, f"KNN/model/SuperDeep{localtime}.pth")  # 保存模型
-
-# ------------测试刚训练好的模型（去test.py测更好）------------
-# # 初始化卷积网络
-# conv_net = DeepConvNet()
-# # 检查 GPU 是否可用
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# # 加载预训练模型的权重（路径替换为你的模型路径）
-# conv_net.load_state_dict(torch.load("KNN/model/SuperDeep2024-11-30_10-36-00.pth", map_location=device))
-# # 将模型移动到 GPU
-# conv_net.to(device)
-# # 使用训练后的模型进行预测
-# conv_net.eval()
-# start = 0
-# end = 3 # [start+1,num_train)，尽量小一点，不然运行会很久
-# with torch.no_grad():
-#     predictions = conv_net(ans_tensor[start:end])
-    
-# # 显示预测结果
-# CQNet.plot_anomalies(ans_tensor, predictions, 0) # 第三个参数表示显示第几张，[0,end)
-
