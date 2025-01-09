@@ -308,5 +308,22 @@ def prepare_data_and_labels(ans, train_num, alpha_start=0.5, alpha_end=2.5, alph
     # 将二维标签扩展为与数据相同的三维尺寸
     labels_tensor = labels_tensor.unsqueeze(0).expand(data_tensor.shape[0], -1, -1)
     labels_tensor = labels_tensor.unsqueeze(1)
-
+    
     return data_tensor, labels_tensor
+
+# 新增代码：将ans_tensor和labels_tensor切片成小块并重新拉伸
+def slice_and_reshape(tensor, label_tensor, slice_size=(75, 64), target_size=(600, 512)):
+    slices = []
+    labels = []
+    for i in range(0, tensor.size(2), slice_size[0]):
+        for j in range(0, tensor.size(3), slice_size[1]):
+            if i + slice_size[0] <= tensor.size(2) and j + slice_size[1] <= tensor.size(3):
+                slice_tensor = tensor[:, :, i:i + slice_size[0], j:j + slice_size[1]]
+                slice_label = label_tensor[:, :, i:i + slice_size[0], j:j + slice_size[1]]
+                # 拉伸为目标大小
+                slice_tensor = nn.functional.interpolate(slice_tensor, size=target_size, mode='bilinear', align_corners=False)
+                slice_label = nn.functional.interpolate(slice_label, size=target_size, mode='bilinear', align_corners=False)
+                slices.append(slice_tensor)
+                labels.append(slice_label)
+    
+    return torch.cat(slices), torch.cat(labels)

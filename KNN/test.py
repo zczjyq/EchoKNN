@@ -18,7 +18,7 @@ img_8bit_matrix = train_functions.read_sonar_data(new_file_path, nums_photo)
 
 # 模型文件路径
 trained_model_path = 'KNN/model/SuperDeep2024-11-30_11-04-30.pth'
-# trained_model_path = './model/SuperDeep.pth'
+# trained_model_path = 'KNN/model/SuperDeep_scripted.pt'
 
 # 循环检测每张图片
 for i in range(1, 2):
